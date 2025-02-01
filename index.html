@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pharmacies de Garde à Djibouti-Ville</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    #map {
+      height: 600px;
+      width: 100%;
+      margin-top: 10px;
+    }
+    h1 {
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pharmacies de Garde à Djibouti-Ville</h1>
+  <div id="map"></div>
+  <script>
+    // Coordonnées du centre de Djibouti-Ville
+    const djiboutiCenter = [11.5880, 43.1450];
+
+    // Création de la carte
+    const map = L.map('map').setView(djiboutiCenter, 13);
+
+    // Ajout de la carte OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Liste des pharmacies de Djibouti-Ville (nom, coordonnées, statut de garde)
+    const pharmacies = [
+      { name: "Pharmacie du Centre", lat: 11.5890, lng: 43.1460, isOnDuty: true },
+      { name: "Pharmacie de la Paix", lat: 11.5870, lng: 43.1440, isOnDuty: false },
+      { name: "Pharmacie de l'Espoir", lat: 11.5900, lng: 43.1470, isOnDuty: true },
+      { name: "Pharmacie du Marché", lat: 11.5860, lng: 43.1430, isOnDuty: false },
+      { name: "Pharmacie de la Gare", lat: 11.5910, lng: 43.1480, isOnDuty: true },
+      // Ajoutez d'autres pharmacies ici avec leurs vraies coordonnées
+    ];
+
+    // Icônes personnalisées
+    const greenIcon = L.icon({
+      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-green.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+    });
+
+    const redIcon = L.icon({
+      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-red.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+    });
+
+    const blueIcon = L.icon({
+      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-blue.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+    });
+
+    const goldIcon = L.icon({
+      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-gold.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+    });
+
+    // Fonction pour calculer la distance entre deux points (formule de Haversine)
+    function calculateDistance(lat1, lng1, lat2, lng2) {
+      const R = 6371; // Rayon de la Terre en km
+      const dLat = (lat2 - lat1) * (Math.PI / 180);
+      const dLng = (lng2 - lng1) * (Math.PI / 180);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c; // Distance en km
+    }
+
+    // Affichage des pharmacies sur la carte
+    pharmacies.forEach(pharma => {
+      L.marker([pharma.lat, pharma.lng], {
+        title: pharma.name,
+        icon: pharma.isOnDuty ? greenIcon : redIcon, // Pharmacie de garde (vert), autres (rouge)
+      }).addTo(map).bindPopup(pharma.name);
+    });
+
+    // Géolocalisation de l'utilisateur et calcul de la pharmacie la plus proche
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        const userLocation = [position.coords.latitude, position.coords.longitude];
+
+        // Ajouter un marqueur pour la position de l'utilisateur
+        L.marker(userLocation, {
+          icon: blueIcon,
+        }).addTo(map).bindPopup('Votre position').openPopup();
+
+        // Calculer la pharmacie la plus proche
+        let nearestPharmacy = null;
+        let nearestDistance = Infinity;
+
+        pharmacies.forEach(pharma => {
+          const distance = calculateDistance(
+            userLocation[0], userLocation[1],
+            pharma.lat, pharma.lng
+          );
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestPharmacy = pharma;
+          }
+        });
+
+        // Afficher la pharmacie la plus proche avec une icône spéciale
+        if (nearestPharmacy) {
+          L.marker([nearestPharmacy.lat, nearestPharmacy.lng], {
+            icon: goldIcon,
+          }).addTo(map).bindPopup(`<b>${nearestPharmacy.name}</b><br>Distance: ${nearestDistance.toFixed(2)} km`).openPopup();
+        }
+
+        // Centrer la carte sur la position de l'utilisateur
+        map.setView(userLocation, 15);
+      });
+    }
+  </script>
+</body>
+</html>
