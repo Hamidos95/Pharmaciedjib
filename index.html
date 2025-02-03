@@ -14,11 +14,32 @@
       text-align: center;
       font-family: Arial, sans-serif;
     }
+    #pharmacy-list {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f4f4f4;
+      border-radius: 5px;
+    }
+    #pharmacy-list ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    #pharmacy-list li {
+      margin: 10px 0;
+      padding: 10px;
+      background: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
   </style>
 </head>
 <body>
   <h1>Pharmacies de Garde à Djibouti-Ville</h1>
   <div id="map"></div>
+  <div id="pharmacy-list">
+    <h2>Liste des pharmacies</h2>
+    <ul id="pharmacies"></ul>
+  </div>
   <script>
     // Coordonnées du centre de Djibouti-Ville
     const djiboutiCenter = [11.5880, 43.1450];
@@ -33,43 +54,12 @@
 
     // Liste des pharmacies de Djibouti-Ville (nom, coordonnées, statut de garde)
     const pharmacies = [
-      { name: "Pharmacie de l'Océan Indien", lat: 11.5890, lng: 43.1460, isOnDuty: true },
-      { name: "Pharmacie de la Mer Rouge", lat: 11.5870, lng: 43.1440, isOnDuty: false },
-      { name: "Pharmacie Nouvelle", lat: 11.5900, lng: 43.1470, isOnDuty: true },
-      { name: "Pharmacie de l'Indépendance", lat: 11.5860, lng: 43.1430, isOnDuty: false },
-      { name: "Grande Pharmacie de la Corne d'Afrique", lat: 11.5910, lng: 43.1480, isOnDuty: true },
-      { name: "Pharmacie Principale", lat: 11.5920, lng: 43.1490, isOnDuty: true },
-      { name: "Pharmacie Avicenne", lat: 11.5930, lng: 43.1500, isOnDuty: false },
-      { name: "PHARMACIE DU MALL", lat: 11.5940, lng: 43.1510, isOnDuty: true },
-      { name: "Pharmacie De l'Hôpital", lat: 11.5950, lng: 43.1520, isOnDuty: false },
-      { name: "Grande Pharmacie de La Corne d'Afrique", lat: 11.5960, lng: 43.1530, isOnDuty: true },
-      { name: "Pharamacie de la paix", lat: 11.5970, lng: 43.1540, isOnDuty: false },
-      { name: "Pharmacie Al Nour", lat: 11.5980, lng: 43.1550, isOnDuty: true },
-      { name: "pharmacie al hayat", lat: 11.5990, lng: 43.1560, isOnDuty: false },
-      { name: "Pharmacie de la station", lat: 11.6000, lng: 43.1570, isOnDuty: true },
-      { name: "LA PHARMACIE DE LA CITÉ", lat: 11.6010, lng: 43.1580, isOnDuty: false },
-      { name: "Pharmacie AL-OUMA", lat: 11.6020, lng: 43.1590, isOnDuty: true },
-      { name: "Pharmacie bonne santé", lat: 11.6030, lng: 43.1600, isOnDuty: false },
-      { name: "Pharmacie Référence", lat: 11.6040, lng: 43.1610, isOnDuty: true },
-      { name: "Pharmacie de l'indépendance Balbala", lat: 11.6050, lng: 43.1620, isOnDuty: false },
-      { name: "Pharmacie Al-Baraka", lat: 11.6060, lng: 43.1630, isOnDuty: true },
-      { name: "Pharmacie D’ambouli", lat: 11.6070, lng: 43.1640, isOnDuty: false },
-      { name: "Pharmacie Golfe d’Aden", lat: 11.6080, lng: 43.1650, isOnDuty: true },
-      { name: "pharmacie riyadh", lat: 11.6090, lng: 43.1660, isOnDuty: false },
-      { name: "Pharmacie de Hayableh", lat: 11.6100, lng: 43.1670, isOnDuty: true },
-      { name: "Pharmacie Populaire", lat: 11.6110, lng: 43.1680, isOnDuty: false },
-      { name: "Pharmacies Hanna", lat: 11.6120, lng: 43.1690, isOnDuty: true },
-      { name: "Pharmacie Ouma-Salma", lat: 11.6130, lng: 43.1700, isOnDuty: false },
-      { name: "Pharmacie du 27 Juin", lat: 11.6140, lng: 43.1710, isOnDuty: true },
-      { name: "Pharmacie Hodane 1", lat: 11.6150, lng: 43.1720, isOnDuty: false },
-      { name: "PK 12 Balballa Health Post", lat: 11.6160, lng: 43.1730, isOnDuty: true },
-      { name: "صيدليةالصقرpharmace Al Sakar", lat: 11.6170, lng: 43.1740, isOnDuty: false },
-      { name: "صيدلية الرحمة", lat: 11.6180, lng: 43.1750, isOnDuty: true },
-      { name: "La Pharmacie Moderne", lat: 11.6190, lng: 43.1760, isOnDuty: false },
-      { name: "PHARMACIE AL-FATH", lat: 11.6200, lng: 43.1770, isOnDuty: true },
-      { name: "CNSS, Pharmacie de Centre des soins site 2", lat: 11.6210, lng: 43.1780, isOnDuty: false },
-      { name: "Pharmacie Al Nour", lat: 11.6220, lng: 43.1790, isOnDuty: true },
-      { name: "PHARMACIE INTERNATIONALE", lat: 11.6230, lng: 43.1800, isOnDuty: false },
+      { name: "Pharmacie du Centre", lat: 11.5890, lng: 43.1460, isOnDuty: true },
+      { name: "Pharmacie de la Paix", lat: 11.5870, lng: 43.1440, isOnDuty: false },
+      { name: "Pharmacie de l'Espoir", lat: 11.5900, lng: 43.1470, isOnDuty: true },
+      { name: "Pharmacie du Marché", lat: 11.5860, lng: 43.1430, isOnDuty: false },
+      { name: "Pharmacie de la Gare", lat: 11.5910, lng: 43.1480, isOnDuty: true },
+      // Ajoutez d'autres pharmacies ici avec leurs vraies coordonnées
     ];
 
     // Icônes personnalisées
@@ -97,17 +87,17 @@
       iconAnchor: [12, 41],
     });
 
-    // Fonction pour calculer la distance entre deux points (formule de Haversine)
-    function calculateDistance(lat1, lng1, lat2, lng2) {
-      const R = 6371; // Rayon de la Terre en km
-      const dLat = (lat2 - lat1) * (Math.PI / 180);
-      const dLng = (lng2 - lng1) * (Math.PI / 180);
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLng / 2) * Math.sin(dLng / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c; // Distance en km
+    // Fonction pour calculer la distance et le temps avec OpenRouteService
+    async function calculateDistanceAndTime(start, end) {
+      const url = `https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf6248e2a8d8a24b7a4f9b8b6f4f4f4f4f4f4f4f4f4f4&start=${start[1]},${start[0]}&end=${end[1]},${end[0]}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.features && data.features.length > 0) {
+        const distance = data.features[0].properties.segments[0].distance / 1000; // Distance en km
+        const duration = data.features[0].properties.segments[0].duration / 60; // Temps en minutes
+        return { distance: distance.toFixed(2), duration: duration.toFixed(2) };
+      }
+      return null;
     }
 
     // Affichage des pharmacies sur la carte
@@ -120,7 +110,7 @@
 
     // Géolocalisation de l'utilisateur et calcul de la pharmacie la plus proche
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(position => {
+      navigator.geolocation.getCurrentPosition(async position => {
         const userLocation = [position.coords.latitude, position.coords.longitude];
 
         // Ajouter un marqueur pour la position de l'utilisateur
@@ -131,23 +121,33 @@
         // Calculer la pharmacie la plus proche
         let nearestPharmacy = null;
         let nearestDistance = Infinity;
+        let nearestDuration = Infinity;
 
-        pharmacies.forEach(pharma => {
-          const distance = calculateDistance(
-            userLocation[0], userLocation[1],
-            pharma.lat, pharma.lng
-          );
-          if (distance < nearestDistance) {
-            nearestDistance = distance;
-            nearestPharmacy = pharma;
+        const pharmacyList = document.getElementById('pharmacies');
+        pharmacyList.innerHTML = ''; // Vider la liste avant de la remplir
+
+        for (const pharma of pharmacies) {
+          const result = await calculateDistanceAndTime(userLocation, [pharma.lat, pharma.lng]);
+          if (result) {
+            const { distance, duration } = result;
+            if (distance < nearestDistance) {
+              nearestDistance = distance;
+              nearestDuration = duration;
+              nearestPharmacy = pharma;
+            }
+
+            // Ajouter la pharmacie à la liste
+            const li = document.createElement('li');
+            li.innerHTML = `<b>${pharma.name}</b><br>Distance: ${distance} km<br>Temps: ${duration} min`;
+            pharmacyList.appendChild(li);
           }
-        });
+        }
 
         // Afficher la pharmacie la plus proche avec une icône spéciale
         if (nearestPharmacy) {
           L.marker([nearestPharmacy.lat, nearestPharmacy.lng], {
             icon: goldIcon,
-          }).addTo(map).bindPopup(`<b>${nearestPharmacy.name}</b><br>Distance: ${nearestDistance.toFixed(2)} km`).openPopup();
+          }).addTo(map).bindPopup(`<b>${nearestPharmacy.name}</b><br>Distance: ${nearestDistance} km<br>Temps: ${nearestDuration} min`).openPopup();
         }
 
         // Centrer la carte sur la position de l'utilisateur
