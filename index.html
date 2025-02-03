@@ -84,53 +84,54 @@
 
     // Icônes personnalisées
     const greenIcon = L.icon({
-      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-green.png',
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41],
     });
 
     const redIcon = L.icon({
-      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-red.png',
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41],
     });
 
     const blueIcon = L.icon({
-      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-blue.png',
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41],
     });
 
     const goldIcon = L.icon({
-      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-gold.png',
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41],
     });
 
-    // Fonction pour calculer la distance et le temps avec OpenRouteService
-    async function calculateDistanceAndTime(start, end) {
-      const url = `https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf6248e2a8d8a24b7a4f9b8b6f4f4f4f4f4f4f4f4f4f4&start=${start[1]},${start[0]}&end=${end[1]},${end[0]}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.features && data.features.length > 0) {
-        const distance = data.features[0].properties.segments[0].distance / 1000; // Distance en km
-        const duration = data.features[0].properties.segments[0].duration / 60; // Temps en minutes
-        return { distance: distance.toFixed(2), duration: duration.toFixed(2) };
-      }
-      return null;
+    // Fonction pour calculer la distance (formule de Haversine)
+    function calculateDistance(lat1, lng1, lat2, lng2) {
+      const R = 6371; // Rayon de la Terre en km
+      const dLat = (lat2 - lat1) * (Math.PI / 180);
+      const dLng = (lng2 - lng1) * (Math.PI / 180);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c; // Distance en km
     }
 
     // Affichage des pharmacies sur la carte
     pharmacies.forEach(pharma => {
-      L.marker([pharma.lat, pharma.lng], {
+      const marker = L.marker([pharma.lat, pharma.lng], {
         title: pharma.name,
         icon: pharma.isOnDuty ? greenIcon : redIcon, // Pharmacie de garde (vert), autres (rouge)
       }).addTo(map).bindPopup(pharma.name);
+      marker.openPopup(); // Ouvrir le popup automatiquement
     });
 
     // Géolocalisation de l'utilisateur et calcul de la pharmacie la plus proche
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async position => {
+      navigator.geolocation.getCurrentPosition(position => {
         const userLocation = [position.coords.latitude, position.coords.longitude];
 
         // Ajouter un marqueur pour la position de l'utilisateur
@@ -141,33 +142,31 @@
         // Calculer la pharmacie la plus proche
         let nearestPharmacy = null;
         let nearestDistance = Infinity;
-        let nearestDuration = Infinity;
 
         const pharmacyList = document.getElementById('pharmacies');
         pharmacyList.innerHTML = ''; // Vider la liste avant de la remplir
 
-        for (const pharma of pharmacies) {
-          const result = await calculateDistanceAndTime(userLocation, [pharma.lat, pharma.lng]);
-          if (result) {
-            const { distance, duration } = result;
-            if (distance < nearestDistance) {
-              nearestDistance = distance;
-              nearestDuration = duration;
-              nearestPharmacy = pharma;
-            }
-
-            // Ajouter la pharmacie à la liste
-            const li = document.createElement('li');
-            li.innerHTML = `<b>${pharma.name}</b><br>Distance: ${distance} km<br>Temps: ${duration} min`;
-            pharmacyList.appendChild(li);
+        pharmacies.forEach(pharma => {
+          const distance = calculateDistance(
+            userLocation[0], userLocation[1],
+            pharma.lat, pharma.lng
+          );
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestPharmacy = pharma;
           }
-        }
+
+          // Ajouter la pharmacie à la liste
+          const li = document.createElement('li');
+          li.innerHTML = `<b>${pharma.name}</b><br>Distance: ${distance.toFixed(2)} km`;
+          pharmacyList.appendChild(li);
+        });
 
         // Afficher la pharmacie la plus proche avec une icône spéciale
         if (nearestPharmacy) {
           L.marker([nearestPharmacy.lat, nearestPharmacy.lng], {
             icon: goldIcon,
-          }).addTo(map).bindPopup(`<b>${nearestPharmacy.name}</b><br>Distance: ${nearestDistance} km<br>Temps: ${nearestDuration} min`).openPopup();
+          }).addTo(map).bindPopup(`<b>${nearestPharmacy.name}</b><br>Distance: ${nearestDistance.toFixed(2)} km`).openPopup();
         }
 
         // Centrer la carte sur la position de l'utilisateur
