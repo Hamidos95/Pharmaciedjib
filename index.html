@@ -127,7 +127,6 @@
         title: pharma.name,
         icon: pharma.isOnDuty ? greenIcon : redIcon, // Pharmacie de garde (vert), autres (rouge)
       }).addTo(map).bindPopup(pharma.name);
-      marker.openPopup(); // Ouvrir le popup automatiquement
     });
 
     // Géolocalisation de l'utilisateur et calcul des distances et temps
@@ -158,6 +157,17 @@
               En voiture: ${drivingResult.distance} km, ${drivingResult.duration} min
             `;
             pharmacyList.appendChild(li);
+
+            const marker = L.marker([pharma.lat, pharma.lng], {
+              title: pharma.name,
+              icon: pharma.isOnDuty ? greenIcon : redIcon,
+            }).addTo(map);
+
+            marker.bindPopup(`
+              <b>${pharma.name}</b><br>
+              À pied: ${walkingResult.distance} km, ${walkingResult.duration} min<br>
+              En voiture: ${drivingResult.distance} km, ${drivingResult.duration} min
+            `);
           }
         }
 
