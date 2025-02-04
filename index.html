@@ -14,32 +14,11 @@
       text-align: center;
       font-family: Arial, sans-serif;
     }
-    #pharmacy-list {
-      margin-top: 20px;
-      padding: 10px;
-      background: #f4f4f4;
-      border-radius: 5px;
-    }
-    #pharmacy-list ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    #pharmacy-list li {
-      margin: 10px 0;
-      padding: 10px;
-      background: #fff;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
   </style>
 </head>
 <body>
   <h1>Pharmacies de Garde à Djibouti-Ville</h1>
   <div id="map"></div>
-  <div id="pharmacy-list">
-    <h2>Liste des pharmacies</h2>
-    <ul id="pharmacies"></ul>
-  </div>
   <script>
     // Coordonnées du centre de Djibouti-Ville
     const djiboutiCenter = [11.5880, 43.1450];
@@ -125,8 +104,10 @@
       const marker = L.marker([pharma.lat, pharma.lng], {
         title: pharma.name,
         icon: pharma.isOnDuty ? greenIcon : redIcon, // Pharmacie de garde (vert), autres (rouge)
-      }).addTo(map).bindPopup(pharma.name);
-      marker.openPopup(); // Ouvrir le popup automatiquement
+      }).addTo(map);
+
+      // Ajouter un popup avec le nom, la distance et le temps estimé
+      marker.bindPopup(`<b>${pharma.name}</b>`);
     });
 
     // Géolocalisation de l'utilisateur et calcul de la pharmacie la plus proche
@@ -143,30 +124,33 @@
         let nearestPharmacy = null;
         let nearestDistance = Infinity;
 
-        const pharmacyList = document.getElementById('pharmacies');
-        pharmacyList.innerHTML = ''; // Vider la liste avant de la remplir
-
         pharmacies.forEach(pharma => {
           const distance = calculateDistance(
             userLocation[0], userLocation[1],
             pharma.lat, pharma.lng
           );
+
+          // Mettre à jour le popup avec la distance et le temps estimé
+          const marker = L.marker([pharma.lat, pharma.lng], {
+            icon: pharma.isOnDuty ? greenIcon : redIcon,
+          }).addTo(map);
+
+          // Temps estimé (en supposant une vitesse de marche de 5 km/h)
+          const time = (distance / 5) * 60; // Temps en minutes
+          marker.bindPopup(`<b>${pharma.name}</b><br>Distance: ${distance.toFixed(2)} km<br>Temps: ${time.toFixed(2)} min`);
+
           if (distance < nearestDistance) {
             nearestDistance = distance;
             nearestPharmacy = pharma;
           }
-
-          // Ajouter la pharmacie à la liste
-          const li = document.createElement('li');
-          li.innerHTML = `<b>${pharma.name}</b><br>Distance: ${distance.toFixed(2)} km`;
-          pharmacyList.appendChild(li);
         });
 
         // Afficher la pharmacie la plus proche avec une icône spéciale
         if (nearestPharmacy) {
+          const time = (nearestDistance / 5) * 60; // Temps en minutes
           L.marker([nearestPharmacy.lat, nearestPharmacy.lng], {
             icon: goldIcon,
-          }).addTo(map).bindPopup(`<b>${nearestPharmacy.name}</b><br>Distance: ${nearestDistance.toFixed(2)} km`).openPopup();
+          }).addTo(map).bindPopup(`<b>${nearestPharmacy.name}</b><br>Distance: ${nearestDistance.toFixed(2)} km<br>Temps: ${time.toFixed(2)} min`).openPopup();
         }
 
         // Centrer la carte sur la position de l'utilisateur
